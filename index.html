@@ -487,6 +487,7 @@
     const turnScore = calculateTurnTotal();
     const pIndex = STATE.currentPlayerIndex;
 
+    // 1. Add points to current player's score
     if (STATE.currentGameIndex === 0) {
       STATE.players[pIndex].scores.coloring += turnScore;
     } else if (STATE.currentGameIndex === 1) {
@@ -497,10 +498,10 @@
       STATE.players[pIndex].scores.racePoints = STATE.racePlayerTotals[pIndex];
     }
 
-    // Reset turn
+    // 2. Clear current turn darts so next player starts with empty slots
     STATE.currentTurnDarts = [];
 
-    // Advance turn
+    // 3. Advance turn to next player
     STATE.currentPlayerIndex++;
     if (STATE.currentPlayerIndex >= STATE.players.length) {
       STATE.currentPlayerIndex = 0;
@@ -510,8 +511,9 @@
       if (game.maxRounds && STATE.currentRound > game.maxRounds) {
         STATE.currentGameIndex++;
         STATE.currentRound = 1;
+        
+        // If all 3 games are completed, finish match
         if (STATE.currentGameIndex >= GAMES.length) {
-          // Finish Game
           gameScreen.classList.add('hidden');
           resultsScreen.classList.remove('hidden');
           renderFinalScoreboard();
@@ -521,6 +523,7 @@
       }
     }
 
+    // 4. Sync state to Firebase so all devices see empty slots for next player
     syncStateToFirebase();
   }
 
