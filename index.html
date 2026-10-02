@@ -123,9 +123,16 @@
       margin-bottom: 15px;
     }
 
+    .input-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
     .btn-dart {
-      padding: 15px;
-      font-size: 16px;
+      padding: 12px 8px;
+      font-size: 14px;
       border: 1px solid #ddd;
       border-radius: 6px;
       background: #fff;
@@ -295,7 +302,7 @@
 
   const GAMES = [
     { name: "1. Coloring Book", maxRounds: 3, instructions: "Hit 3 different colors to TRIPLE your turn points, or hit 3 Red/Green to DOUBLE!" },
-    { name: "2. A Bit of Bully", maxRounds: 3, instructions: "Hit Bullseyes! Outer Bull = 1pt (or 2pt Quad), Inner Bull = 2pt (or 4pt Quad)." },
+    { name: "2. A Bit of Bully", maxRounds: 3, instructions: "Hit target areas to earn points toward your Bully score!" },
     { name: "3. Race to 180", maxRounds: null, instructions: "Score points with active multipliers to reach exactly 180 points!" }
   ];
 
@@ -415,9 +422,9 @@
   function renderControls() {
     inputContainer.innerHTML = '';
     const grid = document.createElement('div');
-    grid.className = 'input-grid';
 
     if (STATE.currentGameIndex === 0) {
+      grid.className = 'input-grid';
       // Coloring Book Options
       const options = [
         { label: 'Miss (0pt)', val: 0, color: 'miss' },
@@ -434,13 +441,35 @@
         grid.appendChild(btn);
       });
     } else if (STATE.currentGameIndex === 1) {
-      // Bully Options
-      const isQuad = STATE.boardType === 'quad';
-      const options = [
-        { label: 'Miss (0pt)', val: 0 },
-        { label: `Outer Bull (${isQuad ? 2 : 1}pt)`, val: isQuad ? 2 : 1 },
-        { label: `Inner Bull (${isQuad ? 4 : 2}pt)`, val: isQuad ? 4 : 2 }
-      ];
+      grid.className = 'input-grid-3';
+      let options = [];
+
+      if (STATE.boardType === 'quad') {
+        // QUAD Board A Bit of Bully Options
+        options = [
+          { label: 'Miss (0pt)', val: 0 },
+          { label: 'Double (1pt)', val: 1 },
+          { label: 'Outer (2pt)', val: 2 },
+          { label: 'Triple (3pt)', val: 3 },
+          { label: 'Middle (4pt)', val: 4 },
+          { label: 'Quad (5pt)', val: 5 },
+          { label: 'Inner (6pt)', val: 6 },
+          { label: 'Bull (10pt)', val: 10 },
+          { label: 'DBull (15pt)', val: 15 }
+        ];
+      } else {
+        // Basic Board A Bit of Bully Options
+        options = [
+          { label: 'Miss (0pt)', val: 0 },
+          { label: 'Double (1pt)', val: 1 },
+          { label: 'Outer (2pt)', val: 2 },
+          { label: 'Triple (3pt)', val: 3 },
+          { label: 'Inner (4pt)', val: 4 },
+          { label: 'Bull (6pt)', val: 6 },
+          { label: 'DBull (10pt)', val: 10 }
+        ];
+      }
+
       options.forEach(opt => {
         const btn = document.createElement('button');
         btn.className = 'btn-dart';
@@ -449,6 +478,7 @@
         grid.appendChild(btn);
       });
     } else if (STATE.currentGameIndex === 2) {
+      grid.className = 'input-grid';
       // Race to 180 Options
       const options = [
         { label: 'Miss (0pt)', val: 0 },
