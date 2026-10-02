@@ -281,7 +281,7 @@
   let currentRoomId = null;
 
   // State Management
-  const STATE = {
+  let STATE = {
     boardType: 'basic',
     players: [], 
     currentGameIndex: 0,
@@ -356,15 +356,26 @@
 
   // Real-time listener function
   function listenToRoomUpdates(roomId) {
-  db.ref('games/' + roomId).on('value', (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-      Object.assign(STATE, data); // <--- OVERWRITES STATE including STATE.currentTurnDarts
-      // ...
-      updateUI();
-    }
-  });
-}
+    db.ref('games/' + roomId).on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        // Replace current state safely, ensuring currentTurnDarts defaults to empty array if omitted by Firebase
+        STATE = {
+          ...data,
+          currentTurnDarts: data.currentTurnDarts || []
+        };
+
+        // Switch to game screen if not already visible
+        if (!setupScreen.classList.contains('hidden')) {
+          setupScreen.classList.add('hidden');
+          gameScreen.classList.remove('hidden');
+        }
+
+        updateUI();
+        renderControls();
+      }
+    });
+  }
 
   // Push updated state to Firebase
   function syncStateToFirebase() {
@@ -491,7 +502,7 @@
       STATE.players[pIndex].scores.racePoints = STATE.racePlayerTotals[pIndex];
     }
 
-    // 2. Clear current turn darts so next player starts with empty slots
+    // 2. Clear current turn darts
     STATE.currentTurnDarts = [];
 
     // 3. Advance turn to next player
@@ -516,7 +527,11 @@
       }
     }
 
-    // 4. Sync state to Firebase so all devices see empty slots for next player
+    // 4. Update UI immediately locally
+    updateUI();
+    renderControls();
+
+    // 5. Sync state to Firebase
     syncStateToFirebase();
   }
 
@@ -528,10 +543,10 @@
     document.getElementById('current-round').innerText = STATE.currentRound;
     document.getElementById('turn-total').innerText = calculateTurnTotal();
 
-    // Render slots
+    // Clear and render 3 dart slots
     for (let i = 0; i < 3; i++) {
       const slot = document.getElementById(`slot-${i}`);
-      if (STATE.currentTurnDarts[i]) {
+      if (STATE.currentTurnDarts && STATE.currentTurnDarts[i]) {
         slot.innerText = STATE.currentTurnDarts[i].text;
         slot.classList.add('filled');
       } else {
