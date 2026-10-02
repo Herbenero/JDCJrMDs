@@ -237,6 +237,26 @@
             color: var(--accent);
         }
     </style>
+    <!-- Firebase App (core) and Realtime Database -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+<script>
+  // Replace with your project config from Firebase Console
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "jdcjr-59452.firebaseapp.com",
+    databaseURL: "https://jdcjr-59452-default-rtdb.firebaseio.com",
+    projectId: "jdcjr-59452",
+    storageBucket: "jdcjr-59452.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+</script>
 </head>
 <body>
     <div class="container">
@@ -261,6 +281,10 @@
             </div>
             <button class="btn-primary" id="btn-start-game">Start Challenge</button>
         </div>
+        <div class="form-group">
+  <label for="room-code">Room Code (Leave blank to generate new)</label>
+  <input type="text" id="room-code" placeholder="e.g. 1234">
+</div>
 
         <!-- GAMEPLAY SCREEN -->
         <div id="game-screen" class="hidden">
@@ -314,6 +338,33 @@
     </div>
 
     <script>
+        let currentRoomId = null;
+
+// Function to push full state or game turn to Firebase
+function syncStateToFirebase() {
+  if (!currentRoomId) return;
+  db.ref('games/' + currentRoomId).set(STATE);
+}
+
+// Function to listen for updates from other devices
+function listenToRoomUpdates(roomId) {
+  currentRoomId = roomId;
+  db.ref('games/' + roomId).on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      // Update local STATE with database data
+      Object.assign(STATE, data);
+      
+      // Update UI screens
+      if (setupScreen.classList.contains('hidden') === false) {
+        setupScreen.classList.add('hidden');
+        gameScreen.classList.remove('hidden');
+      }
+      updateUI();
+      renderControls();
+    }
+  });
+}
         // State Management
         const STATE = {
             boardType: 'basic', // 'basic' | 'quad'
@@ -798,5 +849,29 @@
             table.innerHTML = html;
         }
     </script>
+    <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyDPhfak9SwWu_OjurP_VMjOJXu8j5S4oC8",
+    authDomain: "jdcjr-59452.firebaseapp.com",
+    databaseURL: "https://jdcjr-59452-default-rtdb.firebaseio.com",
+    projectId: "jdcjr-59452",
+    storageBucket: "jdcjr-59452.firebasestorage.app",
+    messagingSenderId: "68227040052",
+    appId: "1:68227040052:web:1de4b944cf19b2616c9b61",
+    measurementId: "G-3LHY312Z5E"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
 </body>
 </html>
