@@ -356,22 +356,15 @@
 
   // Real-time listener function
   function listenToRoomUpdates(roomId) {
-    db.ref('games/' + roomId).on('value', (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        Object.assign(STATE, data);
-
-        // Switch to game screen if not already visible
-        if (!setupScreen.classList.contains('hidden')) {
-          setupScreen.classList.add('hidden');
-          gameScreen.classList.remove('hidden');
-        }
-
-        updateUI();
-        renderControls();
-      }
-    });
-  }
+  db.ref('games/' + roomId).on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      Object.assign(STATE, data); // <--- OVERWRITES STATE including STATE.currentTurnDarts
+      // ...
+      updateUI();
+    }
+  });
+}
 
   // Push updated state to Firebase
   function syncStateToFirebase() {
